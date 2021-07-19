@@ -11,7 +11,6 @@ import java.util.stream.Collectors;
 @Component
 public class ProductMapper {
 
-
     public Product toEntity(ProductDto productDto) {
         return Product.builder()
                 .id(productDto.getId())
@@ -21,7 +20,6 @@ public class ProductMapper {
                 .build();
     }
 
-
     public ProductDto toDto(Product product) {
         return ProductDto.builder()
                 .id(product.getId())
@@ -30,7 +28,6 @@ public class ProductMapper {
                 .quantity(product.getQuantity())
                 .build();
     }
-
 
     public List<ProductDto> toListDto(List<Product> products) {
         return products.stream().map(this::toDto).collect(Collectors.toList());

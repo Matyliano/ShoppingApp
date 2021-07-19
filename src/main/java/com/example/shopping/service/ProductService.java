@@ -29,7 +29,7 @@ public class ProductService {
 
     @Transactional
     public Product update(Product product, Long id) {
-        Product productDb = findById(id);
+        var productDb = findById(id);
         productDb.setId(product.getId());
         productDb.setName(product.getName());
         productDb.setPrice(product.getPrice());
