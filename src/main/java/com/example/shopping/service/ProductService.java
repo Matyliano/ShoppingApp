@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityNotFoundException;
 import javax.transaction.Transactional;
+import java.util.List;
 
 @RequiredArgsConstructor
 @Service
@@ -27,14 +28,18 @@ public class ProductService {
                 .orElseThrow(() -> new EntityNotFoundException("Product with provided id: " + id + " doesn't exist"));
     }
 
+    public List<Product> getAllProducts(){
+        return productRepository.findAll();
+    }
+
     @Transactional
     public Product update(Product product, Long id) {
-        var productDb = findById(id);
-        productDb.setId(product.getId());
-        productDb.setName(product.getName());
-        productDb.setPrice(product.getPrice());
-        productDb.setQuantity(product.getQuantity());
-        return productDb;
+        var productDatabase = findById(id);
+        productDatabase.setId(product.getId());
+        productDatabase.setName(product.getName());
+        productDatabase.setPrice(product.getPrice());
+        productDatabase.setQuantity(product.getQuantity());
+        return productDatabase;
     }
 
     public void deleteById(Long id) {

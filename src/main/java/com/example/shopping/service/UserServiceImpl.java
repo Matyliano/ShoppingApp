@@ -7,11 +7,13 @@ import com.example.shopping.security.SecurityUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityNotFoundException;
 import javax.transaction.Transactional;
 import java.util.Collections;
 
+@Service
 public class UserServiceImpl {
 
     private final UserRepository userRepository;
@@ -40,12 +42,11 @@ public class UserServiceImpl {
 
     @Transactional
     public User update(User user, Long id) {
-        User userDb = findById(id);
-        userDb.setFirstName(user.getFirstName());
-        userDb.setLastName(user.getLastName());
-        userDb.setEmail(user.getEmail());
-
-        return userDb;
+        User updateUser = findById(id);
+        updateUser.setFirstName(user.getFirstName());
+        updateUser.setLastName(user.getLastName());
+        updateUser.setEmail(user.getEmail());
+        return updateUser;
     }
 
 

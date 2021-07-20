@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api")
@@ -36,6 +37,10 @@ public class ProductController {
     @PreAuthorize("hasRole('ADMIN')")
     public ProductDto saveProduct(@RequestBody @Valid ProductDto product){
         return  productMapper.toDto(productService.save(productMapper.toEntity(product)));
+    }
+    @GetMapping("/products")
+    public List<ProductDto> getAllProducts(){
+       return productMapper.toListDto(productService.getAllProducts());
     }
 
     @PutMapping("/{id}")
