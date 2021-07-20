@@ -3,6 +3,9 @@ package com.example.shopping.controller;
 import com.example.shopping.dto.ProductDto;
 import com.example.shopping.mapper.ProductMapper;
 import com.example.shopping.service.ProductService;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -38,6 +41,17 @@ public class ProductController {
     public ProductDto saveProduct(@RequestBody @Valid ProductDto product){
         return  productMapper.toDto(productService.save(productMapper.toEntity(product)));
     }
+
+    @Operation(summary = "Pobierz wszystkie produkty")
+
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "W przypadku zapytania poprawnego zwracany jest status code 200 i lista wszystkich produktów."),
+            @ApiResponse(code = 404, message = "W przypadku braku danych  " +
+                    "zwracany jest komunikat 404 Not Found"),
+            @ApiResponse(code = 400, message = "W przypadku zadania nieprawidłowo sformułowanych zapytań serwis zwraca" +
+                    " komunikat 400 Bad Request")
+    })
+
     @GetMapping("/products")
     public List<ProductDto> getAllProducts(){
        return productMapper.toListDto(productService.getAllProducts());
