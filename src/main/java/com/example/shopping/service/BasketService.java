@@ -23,7 +23,6 @@ public class BasketService {
         this.productService = productService;
     }
 
-
     public Basket addToBasket(Product product) {
         var productDb = productService.findById(product.getId());
 
@@ -38,12 +37,10 @@ public class BasketService {
                 .build());
     }
 
-
     @Transactional
     public void removeProductFromBasket(Long productId) {
         basketRepository.deleteByProductIdAndUserId(productId, userService.getCurrentUser().getId());
     }
-
 
     public Basket updateProductQuantityInBasket(Product product) {
         var currentUser = userService.getCurrentUser();
@@ -58,13 +55,12 @@ public class BasketService {
         return basketRepository.findByProductIdAndUserId(product.getId(), currentUser.getId()).orElseThrow();
     }
 
-
     public List<Product> getBasket() {
         Long userId = userService.getCurrentUser().getId();
 
         return basketRepository.findByUserId(userId).stream()
                 .map(basket -> {
-                    Product product = basket.getProduct();
+                    var product = basket.getProduct();
                     product.setQuantity(basket.getQuantity());
                     return product;
                 })

@@ -7,6 +7,7 @@ import org.mapstruct.Mapper;
 import org.springframework.data.history.Revision;
 import org.mapstruct.Mapping;
 
+
 @Mapper(componentModel = "spring")
 public interface ProductHistoryMapper {
     @Mapping(source = "entity.id", target = "id")
