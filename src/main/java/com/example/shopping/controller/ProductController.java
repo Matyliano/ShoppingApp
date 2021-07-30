@@ -1,6 +1,7 @@
 package com.example.shopping.controller;
 
 import com.example.shopping.dto.ProductDto;
+import com.example.shopping.entity.Product;
 import com.example.shopping.mapper.ProductMapper;
 import com.example.shopping.service.ProductService;
 import io.swagger.annotations.ApiResponse;
@@ -9,6 +10,10 @@ import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.Link;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,6 +27,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
 import java.util.List;
+import java.util.Optional;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 
 @RestController
 @RequestMapping("/api")
@@ -32,14 +40,19 @@ public class ProductController {
     private final ProductMapper productMapper;
 
     @GetMapping("/{id}")
-    public ProductDto getProductById(@PathVariable Long id){
-        return productMapper.toDto(productService.findById(id));
+    public ResponseEntity<Product> getProductById(@PathVariable("id") Long id) {
+        Optional<Product> productOptional = productService.findById(id);
+        return productOptional.map(product -> {
+            addLinkToProduct(product);
+            return ResponseEntity.ok(product);
+        }).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN')")
-    public ProductDto saveProduct(@RequestBody @Valid ProductDto product){
-        return  productMapper.toDto(productService.save(productMapper.toEntity(product)));
+   // @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Product> addNewProduct(@RequestBody ProductDto productDTO) {
+        Optional<Product> addedProduct = productService.addProduct(productMapper.toEntity(productDTO));
+        return addedProduct.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.status(HttpStatus.BAD_REQUEST).build());
     }
 
     @Operation(summary = "Pobierz wszystkie produkty")
@@ -53,13 +66,21 @@ public class ProductController {
     })
 
     @GetMapping("/products")
-    public List<ProductDto> getAllProducts(){
-       return productMapper.toListDto(productService.getAllProducts());
+    public ResponseEntity<CollectionModel<Product>> getAllProducts(){
+        List<Product> products = productService.getAllProducts();
+        products.forEach(product -> product.addIf(!product.hasLinks(), () -> linkTo(ProductController.class)
+                .slash(product.getId()).withSelfRel()));
+        var link = linkTo(ProductController.class).withSelfRel();
+        return ResponseEntity.ok(new CollectionModel<>(products, link));
     }
 
     @PutMapping("/{id}")
-    public ProductDto updateProduct(@RequestBody @Valid ProductDto product,@PathVariable Long id){
-        return  productMapper.toDto(productService.update(productMapper.toEntity(product), id));
+    public ResponseEntity<Product> updateProduct(@RequestBody @Valid ProductDto product,@PathVariable Long id){
+        Optional<Product> productUpdatedOptional = productService.update(productMapper.toEntity(product),id);
+        return productUpdatedOptional.map(productUpdated -> {
+            addLinkToProduct(productUpdated);
+            return ResponseEntity.ok(productUpdated);
+        }).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
     @GetMapping
@@ -70,5 +91,9 @@ public class ProductController {
     @DeleteMapping("/{id}")
     public void deleteProduct(@PathVariable Long id){
         productService.deleteById(id);
+    }
+
+    private void addLinkToProduct(Product product) {
+        product.add(linkTo(ProductController.class).slash(product.getId()).withSelfRel());
     }
 }

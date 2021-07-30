@@ -11,6 +11,7 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import org.springframework.hateoas.RepresentationModel;
 
 import javax.persistence.Entity;
 import javax.persistence.EntityListeners;
@@ -27,7 +28,7 @@ import java.time.LocalDateTime;
 @Builder
 @Audited
 @EntityListeners(AuditingEntityListener.class)
-public class Product {
+public class Product extends RepresentationModel<Product> {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

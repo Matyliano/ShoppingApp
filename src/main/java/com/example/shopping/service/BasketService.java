@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -24,15 +25,15 @@ public class BasketService {
     }
 
     public Basket addToBasket(Product product) {
-        var productDb = productService.findById(product.getId());
+        Optional<Product> productDb = productService.findById(product.getId());
 
-        if (productDb.getQuantity() <= product.getQuantity()) {
+        if (productDb.isPresent() && productDb.get().getQuantity() <= product.getQuantity()) {
             throw new QuantityNotEnoughException("Not enough quantity of product in database");
         }
 
         return basketRepository.save(Basket.builder()
                 .quantity(product.getQuantity())
-                .product(productDb)
+                .product(productDb.get())
                 .user(userService.getCurrentUser())
                 .build());
     }
@@ -46,7 +47,7 @@ public class BasketService {
         var currentUser = userService.getCurrentUser();
         basketRepository.findByProductIdAndUserId(product.getId(),currentUser.getId())
                 .ifPresentOrElse(basket -> {
-                    if(product.getQuantity() <= productService.findById(product.getId()).getQuantity()){
+                    if(product.getQuantity() <= productService.findById(product.getId()).get().getQuantity()){
                         basket.setQuantity(product.getQuantity());
                         basketRepository.save(basket);
                     }

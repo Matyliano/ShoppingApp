@@ -8,9 +8,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import javax.persistence.EntityNotFoundException;
 import javax.transaction.Transactional;
 import java.util.List;
+import java.util.Optional;
 
 @RequiredArgsConstructor
 @Service
@@ -22,10 +22,16 @@ public class ProductService {
         return productRepository.save(product);
     }
 
-    public Product findById(Long id) {
+    public Optional<Product> findById(Long id) {
         log.info("Product not in cache id:{}", id);
-        return productRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Product with provided id: " + id + " doesn't exist"));
+        return productRepository.findAll().stream()
+                .filter(element -> element.getId().equals(id)).findFirst();
+    }
+
+    public Optional<Product> addProduct(Product product) {
+        boolean isProductExists = productRepository.findAll().
+                stream().anyMatch(element -> element.getName().equals(product.getName()));
+        return isProductExists ? Optional.empty() : Optional.of(save(product));
     }
 
     public List<Product> getAllProducts(){
@@ -33,13 +39,19 @@ public class ProductService {
     }
 
     @Transactional
-    public Product update(Product product, Long id) {
-        var productDatabase = findById(id);
-        productDatabase.setId(product.getId());
-        productDatabase.setName(product.getName());
-        productDatabase.setPrice(product.getPrice());
-        productDatabase.setQuantity(product.getQuantity());
-        return productDatabase;
+    public Optional<Product> update(Product product, Long id) {
+        return productRepository.findAll().stream()
+                .filter(element -> element.getId().equals(id))
+                .findFirst()
+                .map(element -> {
+                    element.setPrice(product.getPrice());
+                    element.setName(product.getName());
+                    element.setCategory(product.getCategory());
+                    element.setQuantity(product.getQuantity());
+                    element.setLastModifiedBy(product.getLastModifiedBy());
+                    element.setLastModifiedDate(product.getLastModifiedDate());
+                    return element;
+                });
     }
 
     public void deleteById(Long id) {
